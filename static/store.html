@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sell on Shore — restaurants, pharmacies & stores</title>
+<meta name="description" content="Register your restaurant, pharmacy or store on Shore. Reach customers nearby, receive paid orders, keep 85% of every sale.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:15px/1.6 "Sora",system-ui,sans-serif;background:#f6f1e7;color:#232a38}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px}
+.hero{background:linear-gradient(120deg,#0f8a5f,#0b6b4a);color:#fff;padding:44px 26px;border-radius:0 0 26px 26px}
+.hero h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin-bottom:10px}
+.hero p{color:#d9efe6;max-width:520px;margin-bottom:20px}
+.card{background:#fffdf6;border:1px solid #ddd3bd;border-radius:16px;padding:20px;margin:16px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:12px;border:1px solid transparent;
+font:600 15px "Sora";cursor:pointer;text-decoration:none}
+.btn.amber{background:linear-gradient(90deg,#ffb020,#ff7a1a);color:#161006;width:100%}
+.btn.ghost{background:transparent;border-color:#ddd3bd;color:#232a38}
+.input{width:100%;background:#f0e9d8;border:1px solid #ddd3bd;color:#232a38;padding:12px 14px;border-radius:10px;font:15px "Sora";margin:5px 0 14px;outline:none}
+.hint{color:#7a7f8c;font-size:13px}
+.error{color:#d64545;font-size:13px;margin-top:6px}
+.pill{display:inline-block;background:#e7f6ef;color:#0b6b4a;font:700 12px "Sora";padding:4px 14px;border-radius:999px;margin-bottom:10px}
+.num{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #eee4cd}
+.num b{width:30px;height:30px;border-radius:50%;background:#0f8a5f;color:#fff;font:800 14px/30px "Sora";text-align:center;flex:none}
+footer{padding:26px 0;color:#7a7f8c;font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <span class="pill" style="background:rgba(255,255,255,.15);color:#fff">Vendor registration</span>
+  <h1>Your business, delivered.<br>Sell on Shore today.</h1>
+  <p>Restaurants, pharmacies and stores register free. You receive paid orders from nearby customers and keep <b>85%</b> of every sale — paid straight to your MoMo or bank.</p>
+  <a class="btn amber" href="#register">Register your business</a>
+</div></div>
+
+<div class="wrap">
+  <div class="card"><b>How it works</b>
+    <div class="num"><b>1</b><div><b>Register below</b><div class="hint">Takes two minutes. Our team approves your store, usually within 24 hours.</div></div></div>
+    <div class="num"><b>2</b><div><b>List your items & prices</b><div class="hint">Add your menu, products or medicines with photos of your choosing — full control, anytime.</div></div></div>
+    <div class="num"><b>3</b><div><b>Receive paid orders</b><div class="hint">Customers pay instantly by MoMo or card. You get notified, prepare, and update the order status.</div></div></div>
+    <div class="num" style="border:none"><b>4</b><div><b>Get paid weekly</b><div class="hint">Your 85% share lands in your balance on every order. Payouts to MoMo or bank within 48 hours of request.</div></div></div>
+  </div>
+
+  <div class="card" id="register"><b style="font-size:18px">Create your vendor account</b>
+    <p class="hint" style="margin:6px 0 14px">One account per business. Your store details come next, inside the dashboard.</p>
+    <label class="hint">Business owner name</label><input class="input" id="vName">
+    <label class="hint">Email</label><input class="input" id="vEmail">
+    <label class="hint">Phone</label><input class="input" id="vPhone" placeholder="+233 ...">
+    <label class="hint">Password</label><input class="input" id="vPass" type="password">
+    <div id="vErr" class="error"></div>
+    <button class="btn amber" onclick="registerVendor()">Create account & continue</button>
+    <p class="hint" style="margin-top:10px;text-align:center">Already registered? <a href="/">Sign in to your dashboard</a></p>
+  </div>
+
+  <div class="card"><b>Simple, honest pricing</b>
+    <p style="font-size:30px;font-weight:800;color:#0b6b4a;margin:8px 0">15% <span style="font-size:14px;color:#7a7f8c;font-weight:400">per completed order. No setup fees, no monthly fees, no hidden charges. Everything else is yours.</span></p>
+  </div>
+</div>
+<footer>Shore — restaurants, pharmacies & stores, delivered. <a href="/#terms">Terms</a> · <a href="/#privacy">Privacy</a> · <a href="/#refund">Refunds</a></footer>
+<script>
+const $=id=>document.getElementById(id);
+async function registerVendor(){
+  $("vErr").textContent="";
+  try{
+    const r=await fetch("/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name:$("vName").value.trim(),email:$("vEmail").value.trim(),phone:$("vPhone").value.trim(),password:$("vPass").value,role:"vendor"})});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.detail||("HTTP "+r.status));
+    localStorage.setItem("shore_token",d.access_token);
+    location.href="/#vendor";
+  }catch(e){ $("vErr").textContent=e.message; }
+}
+if (new URLSearchParams(location.search).get("registered")) location.hash="#vendor";
+</script>
+</body>
+</html>

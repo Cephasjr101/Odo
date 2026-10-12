@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shore — restaurants, pharmacies & stores delivered</title>
+<meta name="description" content="Order from verified restaurants, pharmacies and stores near you. Pay securely with MoMo or card.">
+<link rel="icon" href="/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f6f1e7;--panel:#fffdf6;--panel2:#f0e9d8;--line:#ddd3bd;--txt:#232a38;--dim:#7a7f8c;
+--acc:#0f8a5f;--acc2:#0b6b4a;--amber:#ffb020;--amber2:#ff7a1a;--bad:#d64545;--warn:#b7791f}
+body{font:15px/1.55 "Sora",system-ui,sans-serif;background:var(--bg);color:var(--txt);max-width:100vw;overflow-x:hidden}
+h1,h2,h3{line-height:1.2}
+a{color:var(--acc)}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:12px;
+border:1px solid transparent;font:600 15px "Sora";cursor:pointer;text-decoration:none;transition:.15s}
+.btn.primary{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#fff}
+.btn.amber{background:linear-gradient(90deg,var(--amber),var(--amber2));color:#161006}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--txt)}
+.btn.danger{background:rgba(214,69,69,.1);border-color:rgba(214,69,69,.4);color:#c0392b}
+.btn.sm{padding:8px 14px;font-size:13px;border-radius:10px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5}
+.input,select.input,textarea.input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+padding:11px 14px;border-radius:10px;font:15px "Sora";outline:none}
+.input:focus{border-color:var(--acc)}
+.hint{color:var(--dim);font-size:13px}
+.error{color:var(--bad);font-size:13px;margin-top:6px}
+header.top{position:sticky;top:0;z-index:50;background:rgba(246,241,231,.92);backdrop-filter:blur(8px);
+border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:10px;height:58px}
+.logo{display:flex;align-items:center;gap:8px;font:800 18px "Sora";color:var(--txt);text-decoration:none}
+.logo .mk{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--acc2));
+color:#fff;font:800 17px/32px "Sora";text-align:center}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);
+background:var(--panel);font-size:12px;color:var(--dim)}
+.hero{background:linear-gradient(120deg,#0f8a5f,#0b6b4a);border-radius:18px;color:#fff;padding:34px 26px;margin:16px 0}
+.hero h1{font-size:clamp(24px,5vw,34px);font-weight:800;margin-bottom:8px}
+.hero p{color:#d9efe6;margin-bottom:18px;max-width:520px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:9px 18px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
+color:var(--dim);font:600 13px "Sora";cursor:pointer;white-space:nowrap}
+.chip.active{background:linear-gradient(90deg,var(--acc),var(--acc2));color:#fff;border-color:transparent}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:.15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{display:inline-block;font:700 10px "Sora";letter-spacing:1px;text-transform:uppercase;
+padding:3px 10px;border-radius:999px;margin-bottom:8px}
+.cat.restaurant{background:#e7f6ef;color:var(--acc2)}
+.cat.pharmacy{background:#e8f0fe;color:#2a4a9b}
+.cat.store{background:#fff3e0;color:#b7791f}
+.strow{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.price{font:800 17px "Sora";color:var(--acc2)}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font:600 11px "IBM Plex Mono",monospace;
+border:1px solid var(--line);color:var(--dim)}
+.tag.paid{color:#2a4a9b;border-color:#c7d6f5}.tag.accepted,.tag.preparing{color:var(--warn);border-color:#ecd9a8}
+.tag.ready,.tag.dispatched{color:#6b46c1;border-color:#d9c9f5}.tag.delivered{color:var(--acc2);border-color:#bfe6d2}
+.tag.cancelled{color:var(--bad);border-color:#f0c4c4}
+.irow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.irow:last-child{border:none}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:30px;height:30px;border-radius:50%;border:1px solid var(--acc);background:#fff;
+color:var(--acc);font:800 16px "Sora";cursor:pointer}
+.stepper b{min-width:20px;text-align:center}
+.cartbar{position:fixed;left:0;right:0;bottom:64px;z-index:60;padding:10px 14px;background:var(--panel);
+border-top:1px solid var(--line);display:none}
+.cartbar .in{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:12px}
+#bottomBar{position:fixed;left:0;right:0;bottom:0;z-index:80;display:none;
+grid-template-columns:repeat(5,1fr);background:var(--panel);border-top:1px solid var(--line);
+padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+#bottomBar a,#bottomBar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;
+color:var(--dim);text-decoration:none;font:600 10px "Sora";background:none;border:none;cursor:pointer}
+#bottomBar .active{color:var(--acc)}
+.tabpage{display:none;padding-bottom:110px}
+.tabpage.active{display:block;animation:fade .2s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.modal{position:fixed;inset:0;background:rgba(35,42,56,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal.open{display:flex}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:16px}
+.seg button{flex:1;padding:10px;border:none;background:transparent;color:var(--dim);font:600 14px "Sora";border-radius:9px;cursor:pointer}
+.seg button.active{background:var(--acc);color:#fff}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--txt);color:#fff;
+padding:12px 20px;border-radius:12px;font-size:14px;z-index:200;opacity:0;transition:.25s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1}
+.foot{border-top:1px solid var(--line);margin-top:30px;padding:22px 0;color:var(--dim);font-size:13px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat .n{font:800 24px "Sora"}
+.stat .l{font:600 10px "IBM Plex Mono";letter-spacing:1px;color:var(--dim);margin-top:4px}
+table.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th{text-align:left;color:var(--dim);font:600 10px "IBM Plex Mono";letter-spacing:1px;padding:8px;border-bottom:1px solid var(--line)}
+.tb td{padding:9px 8px;border-bottom:1px solid var(--line)}
+.hidden{display:none !important}
+@media(max-width:640px){.desk-nav{display:none}}
+.desk-nav{margin-left:auto;display:flex;gap:4px}
+.desk-nav a{padding:8px 12px;border-radius:10px;color:var(--dim);text-decoration:none;font-size:14px}
+.desk-nav a.active{color:var(--acc);background:rgba(15,138,95,.08)}
+.prose h3{font-size:16px;margin:18px 0 8px}
+.prose p,.prose li{color:#4a5265;font-size:14px}
+.prose ul{padding-left:18px;margin:8px 0}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap top-in">
+  <a class="logo" href="#home"><span class="mk">S</span>SHORE</a>
+  <nav class="desk-nav" id="deskNav">
+    <a href="#home" data-nav="home">Stores</a>
+    <a href="#orders" data-nav="orders">Orders</a>
+    <a href="#vendor" data-nav="vendor" id="navVendor" style="display:none">My store</a>
+    <a href="#admin" data-nav="admin" id="navAdmin" style="display:none">Admin</a>
+  </nav>
+  <div id="navAuth" style="margin-left:auto;display:flex;gap:8px;align-items:center"></div>
+</div></header>
+
+<main class="wrap" id="main">
+  <!-- LANDING -->
+  <section id="landing" class="tabpage active">
+    <div class="hero">
+      <h1>Restaurants, pharmacies & stores.<br>Delivered to your door.</h1>
+      <p>Browse verified businesses near you, order in seconds, and pay securely with MoMo or card.</p>
+      <button class="btn amber" onclick="openAuth('register')">Create free account</button>
+      <button class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.4);margin-left:8px" onclick="openAuth('login')">Sign in</button>
+    </div>
+    <h2 style="margin-bottom:10px">How it works</h2>
+    <div class="card" style="cursor:default"><b>1. Browse stores</b><p class="hint">Restaurants, pharmacies and shops — verified by our team.</p></div>
+    <div class="card" style="cursor:default"><b>2. Add to cart & pay</b><p class="hint">MoMo or card through Paystack. Instant confirmation.</p></div>
+    <div class="card" style="cursor:default"><b>3. Track your order</b><p class="hint">From accepted to delivered — notifications every step.</p></div>
+    <div class="card" style="background:#0f8a5f;border-color:#0f8a5f;color:#fff;cursor:default">
+      <b>Own a business?</b>
+      <p style="color:#d9efe6;margin:6px 0 12px">Register your restaurant, pharmacy or store and start selling today. You keep 85% of every order.</p>
+      <a class="btn amber" href="/store.html">Register your store</a>
+    </div>
+  </section>
+
+  <!-- HOME / STORES -->
+  <section id="home" class="tabpage">
+    <div class="chips" id="catChips">
+      <button class="chip active" data-c="">All</button>
+      <button class="chip" data-c="restaurant">Restaurants</button>
+      <button class="chip" data-c="pharmacy">Pharmacies</button>
+      <button class="chip" data-c="store">Stores</button>
+    </div>
+    <div id="storeList"><div class="hint">Loading stores…</div></div>
+  </section>
+
+  <!-- STORE / MENU + CART -->
+  <section id="store" class="tabpage">
+    <button class="btn ghost sm" onclick="goTab('home')">&larr; All stores</button>
+    <h2 id="storeName" style="margin:10px 0 2px"></h2>
+    <p class="hint" id="storeMeta" style="margin-bottom:8px"></p>
+    <div id="storeMap" style="height:180px;border-radius:14px;border:1px solid var(--line);margin-bottom:14px;display:none"></div>
+    <div id="itemList"></div>
+  </section>
+
+  <!-- ORDERS -->
+  <section id="orders" class="tabpage">
+    <h2 style="margin:14px 0">My orders</h2>
+    <div id="orderList"><p class="hint">No orders yet.</p></div>
+  </section>
+
+  <!-- VENDOR -->
+  <section id="vendor" class="tabpage"><div id="vendorRoot"></div></section>
+
+  <!-- ADMIN -->
+  <section id="admin" class="tabpage"><div id="adminRoot"></div></section>
+
+  <!-- POLICIES -->
+  <section id="terms" class="tabpage prose"><div class="card" style="cursor:default">
+    <h2>Terms of service</h2>
+    <h3>1. The service</h3><p>Shore connects customers with independent restaurants, pharmacies and stores. The sale contract is between you and the store; Shore provides the marketplace and payments.</p>
+    <h3>2. Orders & payment</h3><p>Orders are paid in advance via Paystack (MoMo or card). Prices are set by stores. The platform charges stores a commission per order (shown to store owners).</p>
+    <h3>3. Cancellations</h3><p>Orders can be cancelled before the store accepts them, and by the store or customer with a recorded reason. Refunds for cancelled orders are processed within 72 hours (3 business days).</p>
+    <h3>4. Conduct</h3><p>No fraudulent orders, no abuse of stores or riders. Violations lead to suspension.</p>
+    <h3>5. Insurance</h3><p>Shore provides order protection coverage of up to GHS 1,000,000 per incident when both parties provide sufficient evidence (photos, order records). Claims are reviewed within 72 hours (3 business days) and approved payouts paid within the same window.</p>
+  </div></section>
+  <section id="privacy" class="tabpage prose"><div class="card" style="cursor:default">
+    <h2>Privacy policy</h2>
+    <h3>What we collect</h3><ul><li>Account details: name, email, phone.</li><li>Orders and delivery addresses you provide.</li><li>Store details and item listings for vendors.</li></ul>
+    <h3>How we use it</h3><ul><li>To process orders and payments.</li><li>To notify you about order status.</li><li>To keep the service secure.</li></ul>
+    <h3>What we never do</h3><p>We never sell your data. Payout details are never shared with other users.</p>
+    <h3>Your control</h3><p>Email privacy@shore.app to export or delete your account data.</p>
+  </div></section>
+  <section id="refund" class="tabpage prose"><div class="card" style="cursor:default">
+    <h2>Refund policy</h2>
+    <h3>Customers</h3><p>If an order is cancelled before delivery (by you or the store), your payment is refunded in full within 72 hours (3 business days). If goods arrive damaged or wrong, contact support with your order reference and photos — most disputes resolve within 72 hours.</p>
+    <h3>Stores</h3><p>Your 85% share lands in your balance as soon as an order is paid. Payouts to MoMo or bank are processed within 48 hours of request.</p>
+  </div></section>
+</main>
+
+<div class="cartbar" id="cartBar"><div class="in">
+  <div style="flex:1"><b id="cartTotal">GHS 0.00</b><div class="hint" id="cartCount" style="font-size:11px"></div></div>
+  <button class="btn primary" onclick="checkout()">Checkout</button>
+</div></div>
+
+<nav id="bottomBar">
+  <a href="#home" data-bnav="home">Stores</a>
+  <a href="#orders" data-bnav="orders">Orders</a>
+  <a href="#landing" data-bnav="landing">Home</a>
+  <a href="#vendor" data-bnav="vendor" id="bbVendor" style="display:none">My store</a>
+  <button onclick="openMenuMore()" id="bbMore">More</button>
+</nav>
+
+<div class="modal" id="authModal"><div class="box">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <h2 id="authTitle" style="font-size:19px">Sign in</h2><button class="btn ghost sm" onclick="closeAuth()">✕</button>
+  </div>
+  <div class="seg"><button id="segLogin" class="active" onclick="authMode('login')">Sign in</button>
+  <button id="segReg" onclick="authMode('register')">Create account</button></div>
+  <div id="authLogin">
+    <label class="hint">Email or phone</label><input class="input" id="liId" style="margin:5px 0 12px">
+    <label class="hint">Password</label><input class="input" id="liPass" type="password" style="margin:5px 0 12px">
+    <div id="liErr" class="error"></div>
+    <button class="btn primary block" onclick="doLogin()">Sign in</button>
+    <p class="hint" style="margin-top:10px;text-align:center"><a href="#refund" onclick="forgotLink()">Forgot password?</a></p>
+  </div>
+  <div id="authReg" class="hidden">
+    <div class="seg" style="margin-bottom:12px"><button id="segCust" class="active" onclick="regRole('customer')">Customer</button>
+    <button id="segVend" onclick="regRole('vendor')">Business owner</button></div>
+    <label class="hint">Full name or business name</label><input class="input" id="rgName" style="margin:5px 0 12px">
+    <label class="hint">Email</label><input class="input" id="rgEmail" style="margin:5px 0 12px">
+    <label class="hint">Phone</label><input class="input" id="rgPhone" placeholder="+233 ..." style="margin:5px 0 12px">
+    <label class="hint">Password</label><input class="input" id="rgPass" type="password" style="margin:5px 0 12px">
+    <div id="rgErr" class="error"></div>
+    <button class="btn primary block" onclick="doRegister()">Create account</button>
+    <p class="hint" style="margin-top:8px;font-size:11px;text-align:center">By continuing you agree to our <a href="#terms" onclick="closeAuth()">Terms</a> and <a href="#privacy" onclick="closeAuth()">Privacy Policy</a>.</p>
+  </div>
+</div></div>
+
+<div class="modal" id="addrModal"><div class="box">
+  <h2 style="margin-bottom:8px">Delivery details</h2>
+  <label class="hint">Delivery address</label>
+  <textarea class="input" id="addrText" rows="2" placeholder="House number, street, area, landmark" style="margin:5px 0 10px"></textarea>
+  <div id="addrMap" style="height:200px;border-radius:12px;border:1px solid var(--line);margin-bottom:8px"></div>
+  <button class="btn ghost sm" onclick="useMyLocation()" style="margin-bottom:12px">Use my current location</button>
+  <div id="addrErr" class="error"></div>
+  <button class="btn amber block" onclick="payNow()">Pay with MoMo / card</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= Shore SPA ================= */
+const $ = id => document.getElementById(id);
+const API = "";
+let token = localStorage.getItem("shore_token") || "";
+let me = null, cart = {}, cartStoreId = null, curStore = null, regRoleSel = "customer";
+let notifId = 0, notifPrimed = false;
+
+function toast(m, err){ const t=$("toast"); t.textContent=m; t.className="toast show"; clearTimeout(t._h);
+ t._h=setTimeout(()=>t.className="toast",3000); }
+
+async function api(path, opts={}){
+  const h = Object.assign({}, opts.headers||{});
+  if (opts.body && !(opts.body instanceof FormData)) h["Content-Type"]="application/json";
+  if (token) h["Authorization"]="Bearer "+token;
+  const r = await fetch(API+path, Object.assign({}, opts, {headers:h}));
+  let d=null; try{ d=await r.json(); }catch(e){}
+  if (!r.ok) throw new Error((d&&d.detail)||("HTTP "+r.status));
+  return d;
+}
+const fmt = x => "GHS "+Number(x||0).toLocaleString(undefined,{minimumFractionDigits:2});
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dt = s => s?new Date(s).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
+const ICON = {home:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9H3z"/></svg>',
+ orders:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+ store:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9l1-5h14l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>',
+ plus:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+ grid:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>'};
+
+const TABS = ["landing","home","store","orders","vendor","admin","terms","privacy","refund"];
+function goTab(name){
+  if (!TABS.includes(name)) name = token ? "home" : "landing";
+  if (name !== "landing" && !token) { openAuth("login"); return; }
+  document.querySelectorAll(".tabpage").forEach(s=>s.classList.remove("active"));
+  const el=$(name); if (el){ el.classList.remove("hidden"); el.classList.add("active"); }
+  document.querySelectorAll("[data-nav],[data-bnav]").forEach(a=>a.classList.toggle("active", a.dataset.nav===name||a.dataset.bnav===name));
+  $("bottomBar").style.display = token ? "grid" : "none";
+  if (name==="home") loadStores();
+  if (name==="orders") loadOrders();
+  if (name==="vendor") loadVendor();
+  if (name==="admin") loadAdmin();
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",()=>goTab((location.hash||"#").slice(1).split("?")[0]||""));
+
+/* ---------------- boot ---------------- */
+window.addEventListener("DOMContentLoaded",()=>{
+  $("catChips").addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b)return;
+    document.querySelectorAll("#catChips .chip").forEach(c=>c.classList.remove("active"));
+    b.classList.add("active"); loadStores(b.dataset.c); });
+  document.querySelectorAll("[data-nav],[data-bnav]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();goTab(a.dataset.nav||a.dataset.bnav);}));
+  renderNav();
+  const h=(location.hash||"").slice(1);
+  if (h==="reset"){ goTab("landing"); } else goTab(h||"");
+  setInterval(pollNotifs,12000); pollNotifs(); myPos(()=>{});
+});
+function boot(){ if (token) loadMe().then(()=>goTab("home")); else goTab("landing"); }
+async function loadMe(){ try{ me=await api("/me"); renderNav();
+  if (me.role==="vendor"){ $("navVendor").style.display=""; $("bbVendor").style.display="flex"; }
+  if (me.is_admin){ $("navAdmin").style.display=""; } }catch(e){ me=null; } }
+function renderNav(){
+  const el=$("navAuth");
+  if (token && me){
+    el.innerHTML='<span class="pill">'+esc(me.role)+'</span><button class="btn ghost sm" onclick="logout()">Log out</button>';
+  } else {
+    el.innerHTML='<button class="btn ghost sm" onclick="openAuth(\'login\')">Sign in</button><button class="btn primary sm" onclick="openAuth(\'register\')">Join</button>';
+  }
+}
+function logout(){ token=""; localStorage.removeItem("shore_token"); me=null; renderNav(); goTab("landing"); }
+
+/* ---------------- auth ---------------- */
+function openAuth(m){ authMode(m||"login"); $("authModal").classList.add("open"); }
+function closeAuth(){ $("authModal").classList.remove("open"); }
+function authMode(m){ $("segLogin").classList.toggle("active",m==="login"); $("segReg").classList.toggle("active",m!=="login");
+  $("authLogin").classList.toggle("hidden",m!=="login"); $("authReg").classList.toggle("hidden",m==="login");
+  $("authTitle").textContent = m==="login" ? "Sign in" : "Create your account"; }
+function regRole(r){ regRoleSel=r; $("segCust").classList.toggle("active",r==="customer"); $("segVend").classList.toggle("active",r==="vendor"); }
+async function doLogin(){ $("liErr").textContent="";
+  try{ const d=await api("/auth/login",{method:"POST",body:JSON.stringify({email:$("liId").value.trim(),password:$("liPass").value})});
+    token=d.access_token; localStorage.setItem("shore_token",token); closeAuth(); me=d.user; renderNav(); goTab("home"); toast("Welcome back");
+  }catch(e){ $("liErr").textContent=e.message; } }
+async function doRegister(){ $("rgErr").textContent="";
+  try{ const d=await api("/auth/register",{method:"POST",body:JSON.stringify({name:$("rgName").value.trim(),email:$("rgEmail").value.trim(),phone:$("rgPhone").value.trim(),password:$("rgPass").value,role:regRoleSel})});
+    token=d.access_token; localStorage.setItem("shore_token",token); closeAuth(); me=d.user; renderNav();
+    if (regRoleSel==="vendor"){ location.href="/store.html?registered=1"; return; }
+    goTab("home"); toast("Account created - welcome to Shore");
+  }catch(e){ $("rgErr").textContent=e.message; } }
+function forgotLink(){ closeAuth(); const em=$("liId").value.trim();
+  if (em) api("/auth/forgot",{method:"POST",body:JSON.stringify({email:em})}).then(()=>toast("If that account exists, a reset link is on its way"));
+  else toast("Enter your email first", true); }
+
+/* ---------------- stores & menu ---------------- */
+async function loadStores(cat){
+  try{ const list=await api("/stores"+(cat?"?category="+cat:""));
+    $("storeList").innerHTML = list.length ? list.map(s=>{
+      const dkm = (window._myPos && s.lat != null && s.lng != null) ? km(window._myPos.lat, window._myPos.lng, s.lat, s.lng) : null;
+      return '<div class="card" onclick="openStore('+s.id+')"><span class="cat '+s.category+'">'+s.category+'</span>'+
+      '<div class="strow"><div><b>'+esc(s.name)+'</b><p class="hint" style="margin-top:3px">'+esc(s.description||s.address||"")+'</p></div>'+
+      '<div style="text-align:right">'+(dkm!=null?'<span class="pill">'+dkm.toFixed(1)+' km</span>':"")+
+      (s.phone?'<div class="hint" style="font-size:11px">'+esc(s.phone)+'</div>':"")+'</div></div></div>';
+    }).join("") : '<p class="hint">No approved stores here yet.</p>';
+  }catch(e){ $("storeList").innerHTML='<div class="error">'+esc(e.message)+"</div>"; }
+}
+async function openStore(id){
+  try{ curStore=await api("/stores/"+id); const items=await api("/stores/"+id+"/items");
+    $("storeName").textContent=curStore.name;
+    $("storeMeta").textContent=curStore.category+" · "+(curStore.address||"");
+    if (cartStoreId!==id){ cart={}; cartStoreId=id; }
+    renderItems(items); updateCartBar(); goTab("store"); showStoreMap();
+  }catch(e){ toast(e.message,true); }
+}
+function renderItems(items){
+  $("itemList").innerHTML = items.length ? items.map(i=>{
+    const q=cart[i.id]?cart[i.id].qty:0;
+    return '<div class="irow"><div style="flex:1"><b>'+esc(i.name)+'</b>'+
+      (i.description?'<div class="hint" style="font-size:12px">'+esc(i.description)+"</div>":"")+
+      '<div class="price" style="font-size:15px">'+fmt(i.price_ghs)+"</div></div>"+
+      (q===0
+        ? '<button class="btn primary sm" onclick="addItem('+i.id+","+i.price_ghs+",'"+esc(i.name)+"')\">Add</button>"
+        : '<div class="stepper"><button onclick="chQty('+i.id+',-1)">−</button><b>'+q+'</b><button onclick="chQty('+i.id+',1)">+</button></div>')+
+      "</div>";
+  }).join("") : '<p class="hint">This store has not listed items yet.</p>';
+}
+function addItem(id,price,name){ cart[id]={price,name,qty:1}; refreshItemRow(id); updateCartBar(); }
+function chQty(id,d){ if(!cart[id])return; cart[id].qty+=d; if(cart[id].qty<=0)delete cart[id]; refreshItemRow(id); updateCartBar(); }
+async function refreshItemRow(id){
+  try{ const items=await api("/stores/"+cartStoreId+"/items"); renderItems(items); }catch(e){}
+}
+function cartTotals(){ let t=0,c=0; for(const k in cart){ t+=cart[k].price*cart[k].qty; c+=cart[k].qty; } return {t:Math.round(t*100)/100,c}; }
+function updateCartBar(){ const {t,c}=cartTotals();
+  $("cartBar").style.display = (goTab._cur==="store"&&c>0)?"block":"none";
+  $("cartTotal").textContent=fmt(t); $("cartCount").textContent=c+" item"+(c>1?"s":""); }
+
+/* ---------------- checkout ---------------- */
+function checkout(){ if (!Object.keys(cart).length) return; $("addrModal").classList.add("open"); }
+async function payNow(){
+  const addr=$("addrText").value.trim();
+  if (addr.length<5){ $("addrErr").textContent="Enter a delivery address."; return; }
+  $("addrErr").textContent="";
+  try{
+    const d=await api("/orders",{method:"POST",body:JSON.stringify({store_id:cartStoreId,
+      delivery_address:addr, items:Object.keys(cart).map(k=>({item_id:parseInt(k),qty:cart[k].qty}))})});
+    cart={}; $("addrModal").classList.remove("open"); updateCartBar();
+    window.location.href=d.authorization_url;
+  }catch(e){ $("addrErr").textContent=e.message; }
+}
+
+/* ---------------- orders ---------------- */
+async function loadOrders(){
+  try{ const list=await api("/me/orders");
+    $("orderList").innerHTML = list.length ? list.map(o=>
+      '<div class="card" style="cursor:default"><div class="strow"><div><b>'+esc(o.store)+'</b>'+
+      '<div class="hint" style="font-size:12px">'+o.reference+' · '+dt(o.created_at)+'</div>'+
+      '<div class="hint" style="font-size:12px;margin-top:4px">'+o.items.map(i=>i.qty+"× "+esc(i.name)).join(", ")+'</div>'+
+      (o.cancel_reason?'<div class="hint" style="font-size:12px;color:var(--bad)">'+esc(o.cancel_reason)+"</div>":"")+'</div>'+
+      '<div style="text-align:right"><div class="price">'+fmt(o.total_ghs)+'</div>'+
+      '<span class="tag '+o.status+'">'+o.status+'</span>'+
+      (o.status==="paid"?'<div style="margin-top:8px"><button class="btn danger sm" onclick="cancelOrder('+o.id+')">Cancel</button></div>':"")+
+      "</div></div></div>"
+    ).join("") : '<p class="hint">No orders yet. Browse the stores above.</p>';
+  }catch(e){ $("orderList").innerHTML='<div class="error">'+esc(e.message)+"</div>"; }
+}
+async function cancelOrder(id){
+  const reason=prompt("Reason for cancelling (the store will see it):"); if(reason===null)return;
+  try{ await api("/orders/"+id+"/status",{method:"PATCH",body:JSON.stringify({status:"cancelled",reason})});
+    toast("Order cancelled"); loadOrders(); }catch(e){ toast(e.message,true); }
+}
+
+/* ---------------- vendor ---------------- */
+async function loadVendor(){
+  const root=$("vendorRoot");
+  try{ const d=await api("/my/store");
+    if (!d.store){
+      root.innerHTML='<div class="card" style="cursor:default"><h2>Register your business</h2>'+
+        '<p class="hint" style="margin:8px 0 14px">Your store goes live once our team approves it — usually within 24 hours.</p>'+
+        '<label class="hint">Business name</label><input class="input" id="vsName" style="margin:5px 0 12px">'+
+        '<label class="hint">Category</label><select class="input" id="vsCat" style="margin:5px 0 12px"><option value="restaurant">Restaurant</option><option value="pharmacy">Pharmacy</option><option value="store">Store</option></select>'+
+        '<label class="hint">Description</label><input class="input" id="vsDesc" style="margin:5px 0 12px">'+
+        '<label class="hint">Location / address</label><input class="input" id="vsAddr" style="margin:5px 0 10px"><button class="btn ghost sm" onclick="vendorGPS()" style="margin:0 0 10px">Pin my location</button><input type="hidden" id="vsLat"><input type="hidden" id="vsLng">'+
+        '<label class="hint">Phone</label><input class="input" id="vsPhone" style="margin:5px 0 12px">'+
+        '<div id="vsErr" class="error"></div><button class="btn primary block" onclick="registerStore()">Submit for approval</button></div>';
+      return;
+    }
+    const s=d.store;
+    if (s.status!=="approved"){
+      root.innerHTML='<div class="card" style="cursor:default"><h2>'+esc(s.name)+'</h2>'+
+        '<p style="margin:10px 0"><span class="tag '+(s.status==="pending"?"paid":"cancelled")+'">'+s.status+'</span></p>'+
+        (s.note?'<p class="hint">'+esc(s.note)+"</p>":"")+
+        '<p class="hint" style="margin-top:8px">'+(s.status==="pending"?"We are reviewing your store. You will be notified once approved.":"Fix the note above and contact support to re-apply.")+"</p></div>";
+      return;
+    }
+    const orders=await api("/stores/"+s.id+"/orders");
+    root.innerHTML=
+      '<div class="kpi"><div class="stat"><div class="n">'+fmt(s.balance_ghs)+'</div><div class="l">AVAILABLE BALANCE</div></div>'+
+      '<div class="stat"><div class="n">'+orders.length+'</div><div class="l">ORDERS</div></div></div>'+
+      '<div class="card" style="cursor:default"><h2 style="margin-bottom:10px">Add item</h2>'+
+      '<label class="hint">Item name</label><input class="input" id="viName" style="margin:5px 0 10px">'+
+      '<div style="display:flex;gap:8px"><div style="flex:1"><label class="hint">Price (GHS)</label><input class="input" id="viPrice" type="number" step="0.5" style="margin:5px 0 10px"></div>'+
+      '<div style="flex:1"><label class="hint">Stock</label><input class="input" id="viStock" type="number" style="margin:5px 0 10px"></div></div>'+
+      '<label class="hint">Description (optional)</label><input class="input" id="viDesc" style="margin:5px 0 12px">'+
+      '<div id="viErr" class="error"></div><button class="btn primary block" onclick="addItemVendor('+s.id+')">Add item</button></div>'+
+      '<div class="card" style="cursor:default"><h2 style="margin-bottom:8px">My items</h2><div id="vItems"></div></div>'+
+      '<div class="card" style="cursor:default"><h2 style="margin-bottom:8px">Orders</h2><div id="vOrders">'+
+      (orders.length?orders.map(o=>orderVendorRow(o)).join(""):'<p class="hint">No orders yet.</p>')+"</div></div>";
+    renderVendorItems(d.items, s.id);
+  }catch(e){ root.innerHTML='<div class="error">'+esc(e.message)+"</div>"; }
+}
+function orderVendorRow(o){
+  const next={paid:"accepted",accepted:"preparing",preparing:"ready",ready:"dispatched",dispatched:"delivered"}[o.status];
+  return '<div class="irow" style="align-items:flex-start"><div style="flex:1"><b>'+o.reference+'</b>'+
+    '<div class="hint" style="font-size:12px">'+o.items.map(i=>i.qty+"× "+esc(i.name)).join(", ")+'</div>'+
+    '<div class="hint" style="font-size:12px">'+esc(o.delivery_address||"")+'</div>'+
+    (o.cancel_reason?'<div class="hint" style="font-size:12px;color:var(--bad)">'+esc(o.cancel_reason)+"</div>":"")+'</div>'+
+    '<div style="text-align:right"><div class="price">'+fmt(o.total_ghs)+'</div><span class="tag '+o.status+'">'+o.status+'</span>'+
+    (next?'<div style="margin-top:6px"><button class="btn primary sm" onclick="setOrderStatus('+o.id+",'"+next+"')\">"+next+"</button></div>":"")+"</div></div>";
+}
+async function setOrderStatus(id,status){
+  try{ await api("/orders/"+id+"/status",{method:"PATCH",body:JSON.stringify({status})});
+    toast("Order "+status); loadVendor(); }catch(e){ toast(e.message,true); } }
+function renderVendorItems(items,sid){
+  $("vItems").innerHTML = items.length ? items.map(i=>
+    '<div class="irow"><div style="flex:1"><b>'+esc(i.name)+'</b><div class="hint" style="font-size:12px">'+fmt(i.price_ghs)+" · stock "+i.stock+"</div></div>"+
+    '<button class="btn danger sm" onclick="delItem('+i.id+","+sid+')">Remove</button></div>'
+  ).join("") : '<p class="hint">No items yet - add your first above.</p>';
+}
+async function registerStore(){
+  $("vsErr").textContent="";
+  try{ await api("/stores/register",{method:"POST",body:JSON.stringify({name:$("vsName").value.trim(),category:$("vsCat").value,description:$("vsDesc").value.trim(),address:$("vsAddr").value.trim(),phone:$("vsPhone").value.trim(),lat:$("vsLat").value||null,lng:$("vsLng").value||null})});
+    toast("Store submitted - pending approval"); loadVendor();
+  }catch(e){ $("vsErr").textContent=e.message; }
+}
+async function addItemVendor(sid){
+  $("viErr").textContent="";
+  try{ await api("/stores/"+sid+"/items",{method:"POST",body:JSON.stringify({name:$("viName").value.trim(),price_ghs:parseFloat($("viPrice").value),stock:parseInt($("viStock").value||"999"),description:$("viDesc").value.trim()})});
+    toast("Item added"); loadVendor();
+  }catch(e){ $("viErr").textContent=e.message; }
+}
+async function delItem(id,sid){ try{ await api("/items/"+id,{method:"DELETE"}); loadVendor(); }catch(e){ toast(e.message,true);} }
+
+/* ---------------- admin ---------------- */
+function storeActions(st){
+  if (st.status==="pending")
+    return '<button class="btn primary sm" onclick="storeDecision('+st.id+',\'approve\')">Approve</button> '+
+           '<button class="btn danger sm" onclick="storeDecision('+st.id+',\'reject\')">Reject</button>';
+  if (st.status==="approved")
+    return '<button class="btn danger sm" onclick="storeDecision('+st.id+',\'disable\')">Disable</button>';
+  return "";
+}
+
+async function loadAdmin(){
+  const root=$("adminRoot");
+  if (!me||!me.is_admin){ root.innerHTML='<p class="hint">Admin only.</p>'; return; }
+  try{
+    const s=await api("/admin/stats"), stores=await api("/admin/stores"), orders=await api("/admin/orders"), pr=await api("/admin/pricing");
+    root.innerHTML=
+      '<div class="kpi"><div class="stat"><div class="n">'+s.users+'</div><div class="l">USERS</div></div>'+
+      '<div class="stat"><div class="n">'+s.stores+'</div><div class="l">STORES ('+s.pending_stores+' pending)</div></div>'+
+      '<div class="stat"><div class="n">'+s.orders+'</div><div class="l">ORDERS</div></div>'+
+      '<div class="stat"><div class="n">'+fmt(s.revenue_ghs)+'</div><div class="l">REVENUE (15%)</div></div>'+
+      '<div class="stat"><div class="n">'+fmt(s.stores_balance_ghs)+'</div><div class="l">STORE BALANCES</div></div></div>'+
+      '<div class="card" style="cursor:default"><h2 style="margin-bottom:8px">Commission rate</h2>'+
+      '<div style="display:flex;gap:8px;align-items:center"><input class="input" id="adComm" type="number" step="0.5" min="5" max="40" value="'+(pr.commission_pct*100)+'" style="max-width:110px"><span class="hint">%</span>'+
+      '<button class="btn primary sm" onclick="saveComm()">Save</button></div></div>'+
+      '<div class="card" style="cursor:default"><h2 style="margin-bottom:8px">Store approvals</h2><div style="overflow-x:auto"><table class="tb"><thead><tr><th>Store</th><th>Category</th><th>Owner</th><th>Status</th><th></th></tr></thead><tbody>'+
+      stores.map(st=>"<tr><td>"+esc(st.name)+'<div class="hint" style="font-size:11px">'+esc(st.phone||"")+"</div></td><td>"+st.category+"</td><td class='hint' style='font-size:12px'>"+esc(st.owner)+"</td>"+
+        '<td><span class="tag '+(st.status==="approved"?"delivered":st.status)+'">'+st.status+"</span>"+(st.note?'<div class="hint" style="font-size:11px">'+esc(st.note)+"</div>":"")+"</td>"+
+        "<td>"+storeActions(st)+"</td></tr>").join("")+
+      '</tbody></table></div></div>'+
+      '<div class="card" style="cursor:default"><h2 style="margin-bottom:8px">All orders</h2>'+
+      (orders.length?orders.map(o=>'<div class="irow" style="align-items:flex-start"><div style="flex:1"><b>'+o.reference+'</b> <span class="hint">'+esc(o.store)+'</span>'+
+        '<div class="hint" style="font-size:12px">'+o.items.map(i=>i.qty+"× "+esc(i.name)).join(", ")+'</div></div>'+
+        '<div style="text-align:right"><div class="price">'+fmt(o.total_ghs)+'</div><span class="tag '+o.status+'">'+o.status+"</span></div></div>").join(""):'<p class="hint">No orders yet.</p>')+"</div>";
+  }catch(e){ root.innerHTML='<div class="error">'+esc(e.message)+"</div>"; }
+}
+async function saveComm(){ try{ await api("/admin/pricing",{method:"PUT",body:JSON.stringify({commission_pct:parseFloat($("adComm").value)/100})}); toast("Commission saved"); loadAdmin(); }catch(e){ toast(e.message,true);} }
+async function storeDecision(id,action){ let note=""; if(action==="reject"){ note=prompt("Reason (owner will see it):")||""; }
+  try{ await api("/admin/stores/"+id+"/decision",{method:"POST",body:JSON.stringify({action,note})}); toast("Store "+action+"d"); loadAdmin(); }catch(e){ toast(e.message,true);} }
+
+
+/* ---------------- Google Maps ---------------- */
+window._gmapsReady = false;
+async function ensureMaps(cb){
+  if (window._gmapsReady) return cb();
+  if (!window._gmapsKey){
+    try{ const c = await api("/api/config"); window._gmapsKey = c.google_maps_key || ""; }catch(e){ window._gmapsKey = ""; }
+  }
+  if (!window._gmapsKey){ toast("Maps key not configured"); return; }
+  const s = document.createElement("script");
+  s.src = "https://maps.googleapis.com/maps/api/js?key=" + window._gmapsKey + "&libraries=marker";
+  s.async = true;
+  s.onload = () => { window._gmapsReady = true; cb(); };
+  s.onerror = () => toast("Could not load Google Maps");
+  document.head.appendChild(s);
+}
+function km(a,b,c,d){ const R=6371, t=Math.PI/180;
+  const h=Math.sin((c-a)*t/2)**2 + Math.cos(a*t)*Math.cos(c*t)*Math.sin((d-b)*t/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h)); }
+function myPos(cb){
+  if (window._myPos) return cb(window._myPos);
+  if (!navigator.geolocation) return cb(null);
+  navigator.geolocation.getCurrentPosition(p=>{ window._myPos={lat:p.coords.latitude,lng:p.coords.longitude}; cb(window._myPos); },
+    ()=>cb(null), {timeout:8000});
+}
+function showStoreMap(){
+  const s = curStore;
+  if (s==null || s.lat==null || s.lng==null){ $("storeMap").style.display="none"; return; }
+  ensureMaps(()=>{
+    $("storeMap").style.display="block";
+    const map = new google.maps.Map($("storeMap"), {center:{lat:s.lat,lng:s.lng}, zoom:16, disableDefaultUI:true});
+    new google.maps.marker.AdvancedMarkerElement({map, position:{lat:s.lat,lng:s.lng}, title:s.name});
+  });
+}
+let addrMarker = null;
+function initAddrMap(){
+  ensureMaps(()=>{
+    myPos(pos=>{
+      const center = pos || (curStore && curStore.lat!=null ? {lat:curStore.lat,lng:curStore.lng} : {lat:5.6037,lng:-0.187});
+      const map = new google.maps.Map($("addrMap"), {center, zoom:15, disableDefaultUI:true});
+      addrMarker = new google.maps.marker.AdvancedMarkerElement({map, position:center, gmpDraggable:true, title:"Delivery pin"});
+      map.addListener("click", e=>{ addrMarker.position = e.latLng; });
+      if (pos){ map.setCenter(pos); addrMarker.position = pos; }
+    });
+  });
+}
+function useMyLocation(){
+  myPos(pos=>{ if(!pos) return toast("Location unavailable", true);
+    if (addrMarker){ addrMarker.position = pos; } toast("Location pinned - adjust on the map if needed"); });
+}
+function checkout(){ if (!Object.keys(cart).length) return;
+  $("addrModal").classList.add("open"); initAddrMap(); }
+async function payNow(){
+  const addr=$("addrText").value.trim();
+  if (addr.length<5){ $("addrErr").textContent="Enter a delivery address."; return; }
+  $("addrErr").textContent="";
+  const pos = addrMarker ? addrMarker.position : null;
+  try{
+    const d=await api("/orders",{method:"POST",body:JSON.stringify({store_id:cartStoreId,
+      delivery_address:addr, delivery_lat: pos?pos.lat:null, delivery_lng: pos?pos.lng:null,
+      items:Object.keys(cart).map(k=>({item_id:parseInt(k),qty:cart[k].qty}))})});
+    cart={}; $("addrModal").classList.remove("open"); updateCartBar();
+    window.location.href=d.authorization_url;
+  }catch(e){ $("addrErr").textContent=e.message; }
+}
+function vendorGPS(){
+  myPos(pos=>{ if(!pos) return toast("Location unavailable - type your address instead", true);
+    $("vsLat").value=pos.lat; $("vsLng").value=pos.lng; toast("Location captured"); });
+}
+
+/* ---------------- misc ---------------- */
+async function pollNotifs(){
+  if (!token) return;
+  try{ const items=await api("/notifications");
+    if (!notifPrimed){ notifPrimed=true; notifId=items.length?Math.max.apply(null,items.map(n=>n.id)):0; return; }
+    items.slice().reverse().forEach(n=>{ if(n.id>notifId){ notifId=n.id; toast(n.title+(n.body?" — "+n.body.slice(0,80):"")); }});
+  }catch(e){}
+}
+function openMenuMore(){ goTab(me&&me.is_admin?"admin":"terms"); }
+document.querySelectorAll("#bottomBar a").forEach(a=>a.innerHTML=(a.dataset.bnav==="home"?ICON.grid:a.dataset.bnav==="orders"?ICON.orders:a.dataset.bnav==="landing"?ICON.home:ICON.store)+"<span>"+a.textContent+"</span>");
+goTab._orig=goTab;
+</script>
+</body>
+</html>

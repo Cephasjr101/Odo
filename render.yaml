@@ -1,0 +1,33 @@
+# Render Blueprint for the Shore marketplace.
+services:
+  - type: web
+    name: shore-api
+    runtime: python
+    plan: starter
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.11"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false        # sqlite:////var/data/shore.db once a disk is attached
+      - key: PUBLIC_BASE_URL
+        sync: false        # e.g. https://yourdomain.com
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_CALLBACK_URL
+        sync: false        # https://YOUR-API.onrender.com/payments/callback
+      - key: EMAIL_MODE
+        value: "api"       # SendGrid HTTPS API; SMTP_PASS holds the SG key
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: COMMISSION_PCT
+        sync: false        # optional override of the 15% default
